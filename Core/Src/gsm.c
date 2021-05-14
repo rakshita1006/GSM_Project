@@ -20,6 +20,7 @@ UART_HandleTypeDef huart2;
 
 
 ATCommadsConfig ECHO ={"ATE0",{"\r\nOK\r\n"," ","\r\nERROR\r\n"},{0,0,0},'\r','\n',500};
+ATCommadsConfig Formate_Change ={"ATV0",{"\r\nOK\r\n"," ","\r\nERROR\r\n"},{0,0,0},'\r','\n',500};
 
 ATCommadsConfig Sim_Detect = {"AT+CPIN?",{"READY","","\r\n+CME ERROR\r\n"},{0,0,0},'\r','\n',500};
 ATCommadsConfig IMSI = {"AT+CIMI",{"\r\nOK\r\n","","\r\nCME ERROR\r\n"},{0,0,0},'\r','\n',500};
@@ -769,6 +770,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 
 
+// git add .
+//  git status
+// git commit -m "gsm verification function"
+// git push -u origin master
 
 
 
