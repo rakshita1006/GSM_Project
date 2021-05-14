@@ -1,0 +1,4 @@
+gpioconfig.c:14:6:GPIO_Init	56	static
+gpioconfig.c:205:6:GPIO_Interrupt_Init	24	static
+gpioconfig.c:213:6:ON_OFF	24	static
+gpioconfig.c:229:6:MS_Delay	16	static

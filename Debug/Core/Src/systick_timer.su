@@ -1,0 +1,8 @@
+systick_timer.c:13:5:searchTimerId	16	static
+systick_timer.c:28:6:addTimer	24	static
+systick_timer.c:51:6:startTimer	32	static
+systick_timer.c:73:6:stopTimer	24	static
+systick_timer.c:87:5:isTimerComplete	24	static
+systick_timer.c:105:5:isTimerStarted	24	static
+systick_timer.c:123:6:delayMiliSec	16	static
+systick_timer.c:130:6:HAL_SYSTICK_Callback	16	static

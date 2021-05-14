@@ -1,0 +1,17 @@
+gsm.c:68:9:Send_AT_Command	24	static
+gsm.c:96:6:gsm_sim_Status	4	static
+gsm.c:121:6:gsm_ccid	72	static
+gsm.c:141:6:gsm_imsi	56	static
+gsm.c:162:6:gsm_imei	56	static
+gsm.c:183:6:network_registration_status	4	static
+gsm.c:195:6:network_signal_strength	56	static
+gsm.c:216:6:cops	16	static
+gsm.c:230:6:copn	16	static
+gsm.c:244:6:serverdata	16	static
+gsm.c:259:6:cnbp	16	static
+gsm.c:274:6:gprs_registration_status	16	static
+gsm.c:310:6:gsm_data	8	static
+gsm.c:318:6:VerifyResponseCommand	16	static
+gsm.c:340:16:jump_char_fixed	16	static
+gsm.c:346:6:gsmtask	88	static
+gsm.c:625:6:HAL_UART_RxCpltCallback	16	static
