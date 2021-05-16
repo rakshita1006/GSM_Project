@@ -14,6 +14,7 @@
 
 
 void PeripheralInit();
+void gsm_init();
 
 
 #endif /* PERIPHERAL_INIT_H_ */

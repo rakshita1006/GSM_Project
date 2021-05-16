@@ -142,7 +142,7 @@ int convert_char_to_integer(char* string, int* ptr, int length)
         default:
         	return 0;
 	}
-	return length-1;
+	//return length-1;
 }
 
 int str_comp_count(char* Source_Ram_address, char* Destination_Ram_address, int length)

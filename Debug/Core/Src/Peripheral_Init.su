@@ -1,4 +1,4 @@
 Peripheral_Init.c:12:6:PeripheralInit	8	static
-Peripheral_Init.c:22:6:gsm_init	8	static
-Peripheral_Init.c:34:6:MX_GPIO_Init	56	static
-Peripheral_Init.c:121:6:MX_USART2_UART_Init	8	static
+Peripheral_Init.c:19:6:gsm_init	8	static
+Peripheral_Init.c:26:6:MX_GPIO_Init	56	static
+Peripheral_Init.c:113:6:MX_USART2_UART_Init	8	static

@@ -8,27 +8,19 @@
 
 #include "Peripheral_Init.h"
 
-// main
+
 void PeripheralInit()
 {
-
 	      SystemClock_Config();
 		  MX_GPIO_Init();
-	//	  gsm.Flags.Start= true;
-		  // flag set start
-
+		  gsm.Flags.Start= true;
 }
-// gsm
+
 void gsm_init()
 {
-
 	  MX_USART2_UART_Init();
 	  HAL_UART_Receive_IT(&huart2,&Uart_Rx_Buffer, sizeof(Uart_Rx_Buffer));
-
-//	  gsm.Flags.GsmInitialised= true;
-
-	  		  // initilased gsm flag set
-
+	  gsm.Flags.GsmInitialised= true;
 }
 
 void MX_GPIO_Init(void)
