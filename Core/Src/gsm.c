@@ -67,6 +67,9 @@ ATCommadsConfig TCPIP_DataSend = {"AT+CIPSEND=0,",{"\r\n>\r\nOK\r\n+CIPSEND:"," 
 //ATCOMMANDS TcpIp_Send_data = {"AT+CIPSEND=0,",{"\r\nOK\r\n+CIPSEND:","\r\n>","\r\n+CME ERROR"},{0,0,0},'\r','\n',5000}; //returns a number identifying the socket
 //ATCOMMANDS Socket_connection_Direct_Mode = {"AT+CIPOPEN=0,""\"TCP""\",""\"13.126.165.4""\",""\"4000",{"\r\nOK\r\n","","\r\n+CME ERROR"},{0,0,0},'\r','\n',5000}; //returns a number identifying the socket
 //ATCommadsConfig ServerResponse = {" ",{"\r\nRECV FROM:13.126.165.4:4000\r\n+IPD","","\r\n+CME ERROR"},{0,0,0},'\r','\n',500};
+//ATCommadsConfig GSM_Date&time= {"AT+CCLK?",{"\r\n+CCLK:","","\r\n+CME ERROR"},{0,0,0},'\r','\n',500};
+ATCommadsConfig GSM_Date_time = {"AT+CCLK?",{"\r\n+CCLK:","","\r\n+CME ERROR"},{0,0,0},'\r','\n',500};
+
 
 uint8_t Send_AT_Command(ATCommadsConfig *atcommand)
 {
@@ -188,6 +191,59 @@ bool network_registration_status(void)
 		return false;
 }
 
+void date(void)
+{
+		unsigned char Data[]="+CCLK: ""\"04/01/2001,00:14:12+22""\"";  // AT+CIPOPEN=0,""\"TCP""\",""\"13.126.165.4""\",4000"
+		int j=0;
+		while(true)
+		{
+			if(Data[j]!='\0'){
+			gsm.RxData[j] = Data[j];
+			j++;
+			}
+			else{
+				gsm.RxData[j] = Data[j];
+				break;
+			}
+
+		}
+	//Send_AT_Command(&GSM_Date_time);
+	int i=0;
+	unsigned char *pktptr = &gsm.RxData[0];
+	pktptr = jump_char_fixed(pktptr,'"');
+	//pktptr++;
+		while(*pktptr != ',')
+		{
+			gsm.gsm_data.date[i++] = *pktptr;
+			pktptr++;
+		}
+}
+void time(void)
+{
+		char Data[]="+CCLK: “04/01/2001,00:14:12+22”";
+		int j=0;
+		while(true)
+		{
+			if(Data[j]!='\0'){
+			gsm.RxData[j] = Data[j];
+			j++;
+			}
+			else{
+				gsm.RxData[j] = Data[j];
+				break;
+			}
+
+		}
+		//Send_AT_Command(&GSM_Date_time);
+		int i=0;
+		unsigned char *pktptr = &gsm.RxData[0];
+		pktptr = jump_char_fixed(pktptr,',');
+		while(*pktptr != '+')
+		{
+			gsm.gsm_data.time[i++] = *pktptr;
+			pktptr++;
+		}
+}
 void network_signal_strength()
 {
 	int i=0,j=0;
@@ -282,6 +338,8 @@ void gsm_data()
 {
 	copn();
 	cnbp();
+	date();
+	time();
 }
 
 bool VerifyResponseCommand(ATCommadsConfig *atcommand, char dilli)
@@ -304,296 +362,304 @@ unsigned char* jump_char_fixed(unsigned char *pktPtr, char character)
 
 void gsmtask()
 {
-	switch(gsm_state)
-		{
-		case GSM_INIT_STATE:
-		{
-			if (gsm.Flags.Start == true && gsm.Flags.GsmInitialised !=true)
-			{
-				gsm_init();
-				Send_AT_Command(&ECHO);
-			}
-			if(gsm.Flags.GsmInitialised == true)
-			{
-				if(gsm_sim_Status() == true)
-				{
-
-					gsm_imsi();
-					gsm_imei();
-					gsm_ccid();
-					gsm.Flags.GsmSimStatus = true;
-					gsm_state = GSM_NETWORK_STATE;
-					break;
-				}
-				else
-				{
-					gsm_state = GSM_INIT_STATE;
-				}
-			}
-		}
-	    break;
-		case GSM_NETWORK_STATE:
-		{
-			Send_AT_Command(&NetwrokRegistration);
-			if (network_registration_status() == true)
-			{
-				cops();
-				network_signal_strength();
-				gsm.Flags.GsmNetworkInitialised = true;
-	    		gsm_state = GSM_GPRS_STATE;
-			}
-			else
-			{
-				gsm_state = GSM_NETWORK_STATE;
-			}
-		}
-		break;
-		case GSM_GPRS_STATE:
-		{
-			if(gsm.Flags.GsmNetworkInitialised == true)
-			{
-				switch(gprs_state)
-				{
-					case Gprs_Registration:
-					{
-
-						uint8_t gprs_reg_state=0;
-						Send_AT_Command(&GPRSRegistration);
-						Send_AT_Command(&GPRSRegistrationStatus);
-						gprs_reg_state=VerifyResponseCommand(&GPRSRegistrationStatus,':');
-						if(gprs_reg_state == true)
-						{
-							gsm.Flags.GPRS_REG_Flag = true;
-							gprs_state = Gprs_PDP_Attachment;
-						}
-						else
-						{
-							gsm.Flags.GPRS_REG_Flag =false;
-						}
-					}
-					break;
-					case Gprs_PDP_Attachment:
-					{
-						uint8_t gprs_attachment_state=0;
-					    Send_AT_Command(&PDPAttachWrite);
-					    Send_AT_Command(&PDPStatus);
-					    gprs_attachment_state=VerifyResponseCommand(&PDPStatus,':');
-						if(gprs_attachment_state== true)
-						{
-							gsm.Flags.GPRS_Attachment_Flag =true;
-							gprs_state = Gprs_PDP_Context;
-						}
-						else
-						{
-							gsm.Flags.GPRS_Attachment_Flag =false;
-						}
-					}
-					break;
-					case Gprs_PDP_Context:
-					{
-						uint8_t gprs_PDP_Context_state=0;
-						Send_AT_Command(&PDPContext);
-						Send_AT_Command(&PDPContextStatus);
-						gprs_PDP_Context_state=VerifyResponseCommand(&PDPContextStatus,':');
-						if(gprs_PDP_Context_state== true)
-						{
-							gsm.Flags.GPRS_PDP_Context_Flag =true;
-							gprs_state = Gprs_PDP_Activate;
-						}
-						else
-						{
-							gsm.Flags.GPRS_PDP_Context_Flag =false;
-						}
-					}
-					break;
-					case Gprs_PDP_Activate:
-					{
-						uint8_t gprs_PDP_Activate_state=0;
-						Send_AT_Command(&PDPActivate);
-						Send_AT_Command(&PDPActivateStatus);
-						gprs_PDP_Activate_state=VerifyResponseCommand(&PDPActivateStatus,':');
-						if(gprs_PDP_Activate_state == true)
-						{
-							gsm.Flags.GPRS_PDP_Activate_Flag =true;
-							gsm.Flags.GPRSInitialised =true;
-							gprs_state = Gprs_PDP_Attachment;
-							gsm_state = GSM_DATAPACKET_STATE;
-						}
-						else
-						{
-
-							Send_AT_Command(&PDPDeactivate);
-							gsm.Flags.GPRS_PDP_Activate_Flag =false;
-							gprs_state = Gprs_PDP_Activate;
-						}
-					}
-					break;
-			    }
-			}
-		}
-		break;
-		case GSM_DATAPACKET_STATE:
-				{
-					gsm_data();
-					gsm_state = GSM_TCPIP_STATE;
-				}
-	    break;
-		case GSM_TCPIP_STATE:
-				{
-					if(gsm.Flags.GPRSInitialised == true)
-					{
-						switch(tcp_state)
-						{
-						case TCPIP_Application_Mode_NonTransparent:
-						{
-							uint8_t TCPIP_Application_Mode_state=0;
-							Send_AT_Command(&TCPIP_Application_Mode);
-							Send_AT_Command(&TCPIP_Application_Mode_Status);
-							TCPIP_Application_Mode_state=VerifyResponseCommand(&TCPIP_Application_Mode_Status,':');
-							if( TCPIP_Application_Mode_state == true)
-							{
-								gsm.Flags.TCPIP_Nontransparent_Mode =true;
-								tcp_state = TCPIP_Start_Connection_Mode;
-							}
-							else
-							{
-								gsm.Flags.TCPIP_Nontransparent_Mode =false;
-							}
-						}
-						break;
-						case TCPIP_Start_Connection_Mode:
-						{
-							uint8_t TCPIP_Connection_Mode_state=0;
-							Send_AT_Command(&TCPIP_Connection);
-							Send_AT_Command(&TCPIP_Connection_Status);
-							TCPIP_Connection_Mode_state=VerifyResponseCommand(&TCPIP_Connection_Status,':');
-							if( TCPIP_Connection_Mode_state == true)
-							{
-								gsm.Flags.TCPIP_Connection_Mode =true;
-								tcp_state = TCPIP_DataRetrieve_DirectPUSh_Mode;
-							}
-							else
-							{
-								Send_AT_Command(&TCPIP_END_Connection);
-								Send_AT_Command(&TCPIP_Close_Connection);
-								gsm.Flags.TCPIP_Connection_Mode =false;
-							}
-						}
-						break;
-						case TCPIP_DataRetrieve_DirectPUSh_Mode:
-						{
-							uint8_t TCPIP_DataRetrieve_Mode_state=0;
-							Send_AT_Command(&TCPIP_DataRetrieve);
-							Send_AT_Command(&TCPIP_DataRetrieve_Status);
-							TCPIP_DataRetrieve_Mode_state=VerifyResponseCommand(&TCPIP_DataRetrieve_Status,':');
-							if( TCPIP_DataRetrieve_Mode_state == true)
-							{
-								gsm.Flags.TCPIP_DataRetrieve_Mode =true;
-								tcp_state = TCPIP_Open_Connection_Mode;
-							}
-							else
-							{
-								gsm.Flags.TCPIP_DataRetrieve_Mode =false;
-							}
-						}
-						break;
-						case TCPIP_Open_Connection_Mode:
-						{
-							uint8_t TCPIP_Open_Connection_Mode_state=0;
-							Send_AT_Command(&TCPIP_Connection_Establish);
-							Send_AT_Command(&TCPIP_Connection_Establish_Status);
-							TCPIP_Open_Connection_Mode_state=VerifyResponseCommand(&TCPIP_Connection_Establish_Status,':');
-							if( TCPIP_Open_Connection_Mode_state == true)
-							{
-								gsm.Flags.TCPIP_Open_Connection_Mode =true;
-								tcp_state =TCPIP_Send_Data_Mode ;
-							}
-							else
-							{
-								gsm.Flags.TCPIP_Open_Connection_Mode =false;
-							}
-						}
-						break;
-						case TCPIP_Send_Data_Mode:
-						{
-							Send_AT_Command(&TCPIP_DataSend);
-							char data[] ="Hello GS group";
-							uint8_t CNTRL_Z = 0x1A;
-							uint8_t TCPIP_DATA_Send_Mode_state=0;
-							if(str_comp_dilimetr(gsm.RxData, &TCPIP_DataSend.Response[1][0],0) == true)
-							{
-								HAL_UART_Transmit(&huart2, &data, sizeof(data), 1000);
-								HAL_UART_Transmit(&huart2,&CNTRL_Z, 1, 1000);
-
-							}
-							else
-							{
-                                break;
-							}
-						    HAL_Delay(1000);    //delay 1sec
-							TCPIP_DATA_Send_Mode_state=VerifyResponseCommand(&TCPIP_DataSend,':');
-							if(TCPIP_DATA_Send_Mode_state == true)
-							{
-								gsm.Flags.TCPIP_Data_Send_Mode =true;
-								gsm_state =TCP_RECEIVE_DATA;
-				                tcp_state =TCPIP_Start_Connection_Mode ;
-				                gsm.Flags.Server_Response_Flag = false;
-							}
-
-							else
-							{
-								gsm.Flags.TCPIP_Data_Send_Mode =false;
-								tcp_state =TCPIP_Send_Data_Mode;
-							}
-						}
-						break;
-						}
-				}
-		}
-		break;
-		case TCP_RECEIVE_DATA:
-		{
-			startTimer(&Response_Timer,5000, false);
-			while (gsm.Flags.Server_Response_Flag == false)
-			{
-				if(isTimerComplete(Response_Timer))
-				{
-					break;
-				}
-			}
-		    stopTimer(Response_Timer);
-			//gsm.Flags.Server_Response_Flag = true;// for testing
-			if(str_comp_dilimetr(gsm.RxData,"\r\nRECV FROM:13.126.165.4:4000\r\n+IPD", 0))
-			{
-				gsm.Flags.Server_Response_Flag = false;
-				Send_AT_Command(&TCPIP_END_Connection);
-				Send_AT_Command(&TCPIP_Close_Connection);
-				gsm.Flags.Receive_Data_Flag = true;
-				gsm_state = GSM_SLEEP;
-
-			}
-			else
-			{
-				gsm.Flags.Receive_Data_Flag = false;
-				gsm_state = GSM_TCPIP_STATE;
-				tcp_state =TCPIP_Send_Data_Mode;
-				break;
-			}
-		}
-		break;
-		case GSM_SLEEP:
-		{
-			gsm_state = GSM_RESET;
-		}
-
-		case GSM_RESET:
-		{
-			gsm_state = GSM_INIT_STATE;
-		}
-		default:
-		break;
-	}
+	date();
+	time();
+	GenerateStausPacket();
 }
+
+//void gsmtask()
+//{
+//	switch(gsm_state)
+//		{
+//		case GSM_INIT_STATE:
+//		{
+//			if (gsm.Flags.Start == true && gsm.Flags.GsmInitialised !=true)
+//			{
+//				gsm_init();
+//				Send_AT_Command(&ECHO);
+//			}
+//			if(gsm.Flags.GsmInitialised == true)
+//			{
+//				if(gsm_sim_Status() == true)
+//				{
+//
+//					gsm_imsi();
+//					gsm_imei();
+//					gsm_ccid();
+//					gsm.Flags.GsmSimStatus = true;
+//					gsm_state = GSM_NETWORK_STATE;
+//					break;
+//				}
+//				else
+//				{
+//					gsm_state = GSM_INIT_STATE;
+//				}
+//			}
+//		}
+//	    break;
+//		case GSM_NETWORK_STATE:
+//		{
+//			Send_AT_Command(&NetwrokRegistration);
+//			if (network_registration_status() == true)
+//			{
+//				cops();
+//				network_signal_strength();
+//				gsm.Flags.GsmNetworkInitialised = true;
+//	    		gsm_state = GSM_GPRS_STATE;
+//			}
+//			else
+//			{
+//				gsm_state = GSM_NETWORK_STATE;
+//			}
+//		}
+//		break;
+//		case GSM_GPRS_STATE:
+//		{
+//			if(gsm.Flags.GsmNetworkInitialised == true)
+//			{
+//				switch(gprs_state)
+//				{
+//					case Gprs_Registration:
+//					{
+//
+//						uint8_t gprs_reg_state=0;
+//						Send_AT_Command(&GPRSRegistration);
+//						Send_AT_Command(&GPRSRegistrationStatus);
+//						gprs_reg_state=VerifyResponseCommand(&GPRSRegistrationStatus,':');
+//						if(gprs_reg_state == true)
+//						{
+//							gsm.Flags.GPRS_REG_Flag = true;
+//							gprs_state = Gprs_PDP_Attachment;
+//						}
+//						else
+//						{
+//							gsm.Flags.GPRS_REG_Flag =false;
+//						}
+//					}
+//					break;
+//					case Gprs_PDP_Attachment:
+//					{
+//						uint8_t gprs_attachment_state=0;
+//					    Send_AT_Command(&PDPAttachWrite);
+//					    Send_AT_Command(&PDPStatus);
+//					    gprs_attachment_state=VerifyResponseCommand(&PDPStatus,':');
+//						if(gprs_attachment_state== true)
+//						{
+//							gsm.Flags.GPRS_Attachment_Flag =true;
+//							gprs_state = Gprs_PDP_Context;
+//						}
+//						else
+//						{
+//							gsm.Flags.GPRS_Attachment_Flag =false;
+//						}
+//					}
+//					break;
+//					case Gprs_PDP_Context:
+//					{
+//						uint8_t gprs_PDP_Context_state=0;
+//						Send_AT_Command(&PDPContext);
+//						Send_AT_Command(&PDPContextStatus);
+//						gprs_PDP_Context_state=VerifyResponseCommand(&PDPContextStatus,':');
+//						if(gprs_PDP_Context_state== true)
+//						{
+//							gsm.Flags.GPRS_PDP_Context_Flag =true;
+//							gprs_state = Gprs_PDP_Activate;
+//						}
+//						else
+//						{
+//							gsm.Flags.GPRS_PDP_Context_Flag =false;
+//						}
+//					}
+//					break;
+//					case Gprs_PDP_Activate:
+//					{
+//						uint8_t gprs_PDP_Activate_state=0;
+//						Send_AT_Command(&PDPActivate);
+//						Send_AT_Command(&PDPActivateStatus);
+//						gprs_PDP_Activate_state=VerifyResponseCommand(&PDPActivateStatus,':');
+//						if(gprs_PDP_Activate_state == true)
+//						{
+//							gsm.Flags.GPRS_PDP_Activate_Flag =true;
+//							gsm.Flags.GPRSInitialised =true;
+//							gprs_state = Gprs_PDP_Attachment;
+//							gsm_state = GSM_DATAPACKET_STATE;
+//						}
+//						else
+//						{
+//
+//							Send_AT_Command(&PDPDeactivate);
+//							gsm.Flags.GPRS_PDP_Activate_Flag =false;
+//							gprs_state = Gprs_PDP_Activate;
+//						}
+//					}
+//					break;
+//			    }
+//			}
+//		}
+//		break;
+//		case GSM_DATAPACKET_STATE:
+//				{
+//					gsm_data();
+//					gsm_state = GSM_TCPIP_STATE;
+//				}
+//	    break;
+//		case GSM_TCPIP_STATE:
+//				{
+//					if(gsm.Flags.GPRSInitialised == true)
+//					{
+//						switch(tcp_state)
+//						{
+//						case TCPIP_Application_Mode_NonTransparent:
+//						{
+//							uint8_t TCPIP_Application_Mode_state=0;
+//							Send_AT_Command(&TCPIP_Application_Mode);
+//							Send_AT_Command(&TCPIP_Application_Mode_Status);
+//							TCPIP_Application_Mode_state=VerifyResponseCommand(&TCPIP_Application_Mode_Status,':');
+//							if( TCPIP_Application_Mode_state == true)
+//							{
+//								gsm.Flags.TCPIP_Nontransparent_Mode =true;
+//								tcp_state = TCPIP_Start_Connection_Mode;
+//							}
+//							else
+//							{
+//								gsm.Flags.TCPIP_Nontransparent_Mode =false;
+//							}
+//						}
+//						break;
+//						case TCPIP_Start_Connection_Mode:
+//						{
+//							uint8_t TCPIP_Connection_Mode_state=0;
+//							Send_AT_Command(&TCPIP_Connection);
+//							Send_AT_Command(&TCPIP_Connection_Status);
+//							TCPIP_Connection_Mode_state=VerifyResponseCommand(&TCPIP_Connection_Status,':');
+//							if( TCPIP_Connection_Mode_state == true)
+//							{
+//								gsm.Flags.TCPIP_Connection_Mode =true;
+//								tcp_state = TCPIP_DataRetrieve_DirectPUSh_Mode;
+//							}
+//							else
+//							{
+//								Send_AT_Command(&TCPIP_END_Connection);
+//								Send_AT_Command(&TCPIP_Close_Connection);
+//								gsm.Flags.TCPIP_Connection_Mode =false;
+//							}
+//						}
+//						break;
+//						case TCPIP_DataRetrieve_DirectPUSh_Mode:
+//						{
+//							uint8_t TCPIP_DataRetrieve_Mode_state=0;
+//							Send_AT_Command(&TCPIP_DataRetrieve);
+//							Send_AT_Command(&TCPIP_DataRetrieve_Status);
+//							TCPIP_DataRetrieve_Mode_state=VerifyResponseCommand(&TCPIP_DataRetrieve_Status,':');
+//							if( TCPIP_DataRetrieve_Mode_state == true)
+//							{
+//								gsm.Flags.TCPIP_DataRetrieve_Mode =true;
+//								tcp_state = TCPIP_Open_Connection_Mode;
+//							}
+//							else
+//							{
+//								gsm.Flags.TCPIP_DataRetrieve_Mode =false;
+//							}
+//						}
+//						break;
+//						case TCPIP_Open_Connection_Mode:
+//						{
+//							uint8_t TCPIP_Open_Connection_Mode_state=0;
+//							Send_AT_Command(&TCPIP_Connection_Establish);
+//							Send_AT_Command(&TCPIP_Connection_Establish_Status);
+//							TCPIP_Open_Connection_Mode_state=VerifyResponseCommand(&TCPIP_Connection_Establish_Status,':');
+//							if( TCPIP_Open_Connection_Mode_state == true)
+//							{
+//								gsm.Flags.TCPIP_Open_Connection_Mode =true;
+//								tcp_state =TCPIP_Send_Data_Mode ;
+//							}
+//							else
+//							{
+//								gsm.Flags.TCPIP_Open_Connection_Mode =false;
+//							}
+//						}
+//						break;
+//						case TCPIP_Send_Data_Mode:
+//						{
+//							Send_AT_Command(&TCPIP_DataSend);
+//							char data[] ="Hello GS group";
+//							GenerateStausPacket();
+//							uint8_t CNTRL_Z = 0x1A;
+//							uint8_t TCPIP_DATA_Send_Mode_state=0;
+//							if(str_comp_dilimetr(gsm.RxData, &TCPIP_DataSend.Response[1][0],0) == true)
+//							{
+//								HAL_UART_Transmit(&huart2, &data, sizeof(data), 1000);
+//								HAL_UART_Transmit(&huart2,&CNTRL_Z, 1, 1000);
+//
+//							}
+//							else
+//							{
+//                                break;
+//							}
+//						    HAL_Delay(1000);    //delay 1sec
+//							TCPIP_DATA_Send_Mode_state=VerifyResponseCommand(&TCPIP_DataSend,':');
+//							if(TCPIP_DATA_Send_Mode_state == true)
+//							{
+//								gsm.Flags.TCPIP_Data_Send_Mode =true;
+//								gsm_state =TCP_RECEIVE_DATA;
+//				                tcp_state =TCPIP_Start_Connection_Mode ;
+//				                gsm.Flags.Server_Response_Flag = false;
+//							}
+//
+//							else
+//							{
+//								gsm.Flags.TCPIP_Data_Send_Mode =false;
+//								tcp_state =TCPIP_Send_Data_Mode;
+//							}
+//						}
+//						break;
+//						}
+//				}
+//		}
+//		break;
+//		case TCP_RECEIVE_DATA:
+//		{
+//			startTimer(&Response_Timer,5000, false);
+//			while (gsm.Flags.Server_Response_Flag == false)
+//			{
+//				if(isTimerComplete(Response_Timer))
+//				{
+//					break;
+//				}
+//			}
+//		    stopTimer(Response_Timer);
+//			//gsm.Flags.Server_Response_Flag = true;// for testing
+//			if(str_comp_dilimetr(gsm.RxData,"\r\nRECV FROM:13.126.165.4:4000\r\n+IPD", 0))
+//			{
+//				gsm.Flags.Server_Response_Flag = false;
+//				Send_AT_Command(&TCPIP_END_Connection);
+//				Send_AT_Command(&TCPIP_Close_Connection);
+//				gsm.Flags.Receive_Data_Flag = true;
+//				gsm_state = GSM_SLEEP;
+//
+//			}
+//			else
+//			{
+//				gsm.Flags.Receive_Data_Flag = false;
+//				gsm_state = GSM_TCPIP_STATE;
+//				tcp_state =TCPIP_Send_Data_Mode;
+//				break;
+//			}
+//		}
+//		break;
+//		case GSM_SLEEP:
+//		{
+//			gsm_state = GSM_RESET;
+//		}
+//
+//		case GSM_RESET:
+//		{
+//			gsm_state = GSM_INIT_STATE;
+//		}
+//		default:
+//		break;
+//	}
+//}
 
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)

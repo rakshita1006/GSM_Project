@@ -14,6 +14,7 @@
 #include "gsm.h"
 #include "string_operations.h"
 #include "Peripheral_Init.h"
+#include "frame.h"
 
 
 

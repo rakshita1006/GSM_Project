@@ -28,7 +28,8 @@ Core/Src/main.o: ../Core/Src/main.c \
  ../Core/Inc/Peripheral_Init.h ../Core/Inc/main.h ../Core/Inc/Include.h \
  ../Core/Inc/systick_timer.h ../Core/Inc/gsm.h \
  ../Core/Inc/string_operations.h ../Core/Inc/Peripheral_Init.h \
- ../Core/Inc/main.h ../Core/Inc/gpioconfig.h ../Core/Inc/gsm.h
+ ../Core/Inc/frame.h ../Core/Inc/main.h ../Core/Inc/gpioconfig.h \
+ ../Core/Inc/gsm.h
 
 ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h:
 
@@ -95,6 +96,8 @@ Core/Src/main.o: ../Core/Src/main.c \
 ../Core/Inc/string_operations.h:
 
 ../Core/Inc/Peripheral_Init.h:
+
+../Core/Inc/frame.h:
 
 ../Core/Inc/main.h:
 

@@ -27,7 +27,7 @@ Core/Src/gsm.o: ../Core/Src/gsm.c ../Core/Inc/Include.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Core/Inc/main.h ../Core/Inc/systick_timer.h ../Core/Inc/gsm.h \
  ../Core/Inc/Include.h ../Core/Inc/string_operations.h \
- ../Core/Inc/Peripheral_Init.h ../Core/Inc/gsm.h
+ ../Core/Inc/Peripheral_Init.h ../Core/Inc/frame.h ../Core/Inc/gsm.h
 
 ../Core/Inc/Include.h:
 
@@ -94,5 +94,7 @@ Core/Src/gsm.o: ../Core/Src/gsm.c ../Core/Inc/Include.h \
 ../Core/Inc/string_operations.h:
 
 ../Core/Inc/Peripheral_Init.h:
+
+../Core/Inc/frame.h:
 
 ../Core/Inc/gsm.h:

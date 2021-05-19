@@ -22,7 +22,7 @@
 int main(void)
 {
 	  PeripheralInit();
-	  gsmtask();
+	  //gsmtask();
 
 	  while (true)
 	  {

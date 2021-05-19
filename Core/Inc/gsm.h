@@ -78,7 +78,14 @@ struct gsm_data_struct
    char cnbp[15];
    char Server_Response[1024];
    char gprs_registration[15];
-
+   char DeviceID[15];
+   char SwVer[5];
+   char RecordID[10];
+   char Server_name[20];
+   char Status_Port[5];
+   char Command_Port[5];
+   unsigned  char date[10];
+   char time[8];
 }__attribute__ ((packed));
 
 struct Gsm_Flags
@@ -142,6 +149,8 @@ bool gprs_registration_status(void);
 void gsm_data();
 bool VerifyResponseCommand(ATCommadsConfig *atcommand, char dilli);
 bool Server_Response();
+void date(void);
+void time(void);
 
 
 #endif /* GSM_H_ */
