@@ -120,14 +120,14 @@ bool gsm_sim_Status()
 void gsm_ccid()
 {
 	int i=0,j=0;
-	Send_AT_Command(&CCID);
-//	char Data[]="\r\n+ICCID:8991102005303552671\r\n\r\nOK\r\n";
-//	while(Data[j]!='K')
-//	{
-//		gsm.RxData[j] = Data[j];
-//		j++;
-//
-//	}
+	//Send_AT_Command(&CCID);
+	char Data[]="\r\n+ICCID:8991102005303552671\r\n\r\nOK\r\n";
+	while(Data[j]!='K')
+	{
+		gsm.RxData[j] = Data[j];
+		j++;
+
+	}
 	unsigned char *pktptr = &gsm.RxData[0];
 	pktptr = jump_char_fixed(pktptr,':');
 	//pktptr++;
@@ -140,14 +140,14 @@ void gsm_ccid()
 void gsm_imsi()
 {
 	int i=0,j=0;
-	Send_AT_Command(&IMSI);
-//	char Data[]="\r\n404100530355267\r\n\r\nOK\r\n";
-//	while(Data[j]!='K')
-//	{
-//		gsm.RxData[j] = Data[j];
-//		j++;
-//
-//	}
+//	Send_AT_Command(&IMSI);
+	char Data[]="\r\n404100530355267\r\n\r\nOK\r\n";
+	while(Data[j]!='K')
+	{
+		gsm.RxData[j] = Data[j];
+		j++;
+
+	}
 	unsigned char *pktptr = &gsm.RxData[0];
 	pktptr = jump_char_fixed(pktptr,'\n');
 	//pktptr++;
@@ -161,14 +161,14 @@ void gsm_imsi()
 void gsm_imei()
 {
 	int i=0,j=0;
-	Send_AT_Command(&IMEI);
-//	char Data[]="\r\n861123052577218\r\n\r\nOK\r\n";
-//		while(Data[j]!='K')
-//		{
-//			gsm.RxData[j] = Data[j];
-//			j++;
-//
-//		}
+//	Send_AT_Command(&IMEI);
+	char Data[]="\r\n861123052577218\r\n\r\nOK\r\n";
+		while(Data[j]!='K')
+		{
+			gsm.RxData[j] = Data[j];
+			j++;
+
+		}
 	unsigned char *pktptr = &gsm.RxData[0];
 	pktptr = jump_char_fixed(pktptr,'\n');
 	//pktptr++;
@@ -191,10 +191,11 @@ bool network_registration_status(void)
 		return false;
 }
 
-void date(void)
+void date()
 {
-		unsigned char Data[]="+CCLK: ""\"04/01/2001,00:14:12+22""\"";  // AT+CIPOPEN=0,""\"TCP""\",""\"13.126.165.4""\",4000"
+		//unsigned char Data[]="+CCLK: ""\"04/01/2001,00:14:12+22""\"";  // AT+CIPOPEN=0,""\"TCP""\",""\"13.126.165.4""\",4000"
 		int j=0;
+		unsigned char Data[]="+CCLK:14/12/2005,00:14:12+22";
 		while(true)
 		{
 			if(Data[j]!='\0'){
@@ -208,53 +209,60 @@ void date(void)
 
 		}
 	//Send_AT_Command(&GSM_Date_time);
-	int i=0;
+	int i=0,k=0;
 	unsigned char *pktptr = &gsm.RxData[0];
-	pktptr = jump_char_fixed(pktptr,'"');
+//	pktptr = jump_char_fixed(pktptr,'"');
+	pktptr = jump_char_fixed(pktptr,':');
 	//pktptr++;
 		while(*pktptr != ',')
 		{
 			gsm.gsm_data.date[i++] = *pktptr;
 			pktptr++;
 		}
-}
-void time(void)
-{
-		char Data[]="+CCLK: “04/01/2001,00:14:12+22”";
-		int j=0;
-		while(true)
-		{
-			if(Data[j]!='\0'){
-			gsm.RxData[j] = Data[j];
-			j++;
-			}
-			else{
-				gsm.RxData[j] = Data[j];
-				break;
-			}
-
-		}
-		//Send_AT_Command(&GSM_Date_time);
-		int i=0;
-		unsigned char *pktptr = &gsm.RxData[0];
 		pktptr = jump_char_fixed(pktptr,',');
 		while(*pktptr != '+')
 		{
-			gsm.gsm_data.time[i++] = *pktptr;
+			gsm.gsm_data.time[k++] = *pktptr;
 			pktptr++;
 		}
 }
+//void time(void)
+//{
+//		char Data[]="+CCLK: ""\"04/01/2001,00:14:12+22""\"";
+//		int j=0;
+//		while(true)
+//		{
+//			if(Data[j]!='\0'){
+//			gsm.RxData[j] = Data[j];
+//			j++;
+//			}
+//			else{
+//				gsm.RxData[j] = Data[j];
+//				break;
+//			}
+//
+//		}
+//		//Send_AT_Command(&GSM_Date_time);
+//		int i=0;
+//		unsigned char *pktptr = &gsm.RxData[0];
+//		pktptr = jump_char_fixed(pktptr,',');
+//		while(*pktptr != '+')
+//		{
+//			gsm.gsm_data.time[i++] = *pktptr;
+//			pktptr++;
+//		}
+//}
 void network_signal_strength()
 {
 	int i=0,j=0;
-	Send_AT_Command(&NetwrokSignalStrength);
-//	char Data[]="\r\n+CSQ: 22,0\r\n\r\nOK\r\n";
-//		while(Data[j]!='K')
-//		{
-//			gsm.RxData[j] = Data[j];
-//			j++;
-//
-//		}
+	//Send_AT_Command(&NetwrokSignalStrength);
+	char Data[]="\r\n+CSQ: 22,0\r\n\r\nOK\r\n";
+		while(Data[j]!='K')
+		{
+			gsm.RxData[j] = Data[j];
+			j++;
+
+		}
 	unsigned char *pktptr = &gsm.RxData[0];
 	pktptr = jump_char_fixed(pktptr,':');
 	pktptr++;
@@ -334,13 +342,14 @@ bool gprs_registration_status(void)
 		return false;
 }
 
-void gsm_data()
-{
-	copn();
-	cnbp();
-	date();
-	time();
-}
+//void gsm_data()
+//{
+//	copn();
+//	cnbp();
+//	date();
+//	time();
+//	gsm.gsm_data.FC_CONFIGURATION = FC_ALERT;
+//}
 
 bool VerifyResponseCommand(ATCommadsConfig *atcommand, char dilli)
 {
@@ -362,8 +371,13 @@ unsigned char* jump_char_fixed(unsigned char *pktPtr, char character)
 
 void gsmtask()
 {
+	gsm_imsi();
+	gsm_imei();
+	gsm_ccid();
 	date();
-	time();
+//	time();
+	network_signal_strength();
+	gsm.gsm_data.FC_CONFIGURATION = FC_ALERT;
 	GenerateStausPacket();
 }
 

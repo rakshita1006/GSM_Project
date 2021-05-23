@@ -8,7 +8,10 @@
 #ifndef STRING_OPERATIONS_H_
 #define STRING_OPERATIONS_H_
 
-int convert_integer_to_char(int num, char *str);
+#include "Include.h"
+
+//int convert_integer_to_char(int num, char *str);
+int convert_integer_to_char(uint16_t num, char *str,uint16_t length);
 int convert_negative_int_to_char(int num, char *str, int length);
 int convert_char_to_integer_buff(char* string, int* ptr, int length);
 int convert_char_to_integer(char* string, int* ptr, int length);

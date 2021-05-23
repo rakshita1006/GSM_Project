@@ -21,6 +21,14 @@
 
 #define SIZE_OF_AT_TX_RX_BUFFER 1024
 
+// functional code
+# define FC_ALERT				'A'
+#define  FC_KEEPLIVE			'K'
+#define  FC_STATUS				'S'
+#define	 FC_CONFIG		'C'
+#define	 FC_BUZZER_ON			'N'
+#define	 FC_BUZZER_OFF			'F'
+
 UART_HandleTypeDef huart2;
 
 
@@ -84,8 +92,9 @@ struct gsm_data_struct
    char Server_name[20];
    char Status_Port[5];
    char Command_Port[5];
-   unsigned  char date[10];
-   char time[8];
+   unsigned  char date[15];
+   unsigned char time[10];
+   unsigned  char FC_CONFIGURATION;
 }__attribute__ ((packed));
 
 struct Gsm_Flags
@@ -107,7 +116,8 @@ struct Gsm_Flags
      unsigned  TCPIP_Close_Connection_Mode:1;
      unsigned  TCPIP_END_Connection_Mode:1;
      unsigned  Server_Response_Flag:1;
-     unsigned Receive_Data_Flag:1;
+     unsigned  Receive_Data_Flag:1;
+     unsigned  DataPacketReady:1;
 
 }__attribute__ ((packed));
 

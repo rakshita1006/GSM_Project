@@ -4,15 +4,16 @@
  *
 
  */
-int convert_integer_to_char(int num, char *str)
+#include "Include.h"
+int convert_integer_to_char(uint16_t num, char *str,uint16_t length)
 {
-	int temp=count_intlength(num);
+	//int temp=count_intlength(num);
 	if(num == 0)
 	{
 		*str  = '0';
 		return 0;
 	}
-	switch(temp)
+	switch(length)
 	{
 		case 5:
 			*str++ = num/10000 + 0x30;

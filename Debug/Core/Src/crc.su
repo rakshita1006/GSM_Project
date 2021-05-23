@@ -1,0 +1,2 @@
+crc.c:9:5:crc_main	1064	static
+crc.c:127:1:xcrc32	32	static

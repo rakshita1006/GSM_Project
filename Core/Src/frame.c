@@ -6,6 +6,8 @@
  */
 #include "Include.h"
 
+#include <string.h>
+
 
 //Gsm_struct gsm;
 char DeviceID[15] = "DS23456001";		//DS + IMEI last 5 digit  + 001 or DS + IMEI last 5 digit + K2K
@@ -38,23 +40,23 @@ uint32_t str_copy_ram_lim_ret( char *rec_src_ram_add,  char *rec_dest_ram_add,  
 //
 //
 //
-//unsigned str_comp_ram_lim( char *rec_src_ram_add,  char *rec_dest_ram_add,  uint8_t rec_delim)
-//{
-//    while(*rec_src_ram_add != rec_delim)
-//    {
-//        if(*rec_dest_ram_add++ != *rec_src_ram_add++)
-//            return(0);
-//    }
-//    return(1);
-//}
+unsigned str_comp_ram_lim( char *rec_src_ram_add,  char *rec_dest_ram_add,  uint8_t rec_delim)
+{
+    while(*rec_src_ram_add != rec_delim)
+    {
+        if(*rec_dest_ram_add++ != *rec_src_ram_add++)
+            return(0);
+    }
+    return(1);
+}
 //
 //
-//void str_copy_ram_lim( char *rec_src_ram_add,  char *rec_dest_ram_add,  char rec_delimitter)
-//{
-//    while(*rec_src_ram_add != rec_delimitter)
-//        *rec_dest_ram_add++ = *rec_src_ram_add++;
-//}
-//
+void str_copy_ram_lim( char *rec_src_ram_add,  char *rec_dest_ram_add,  char rec_delimitter)
+{
+    while(*rec_src_ram_add != rec_delimitter)
+        *rec_dest_ram_add++ = *rec_src_ram_add++;
+}
+
 
 void GenerateStausPacket()
 {
@@ -193,25 +195,28 @@ void GenerateStausPacket()
 ////        char_dest_ptr += str_copy_ram_lim_ret(Gps.GpsDataString.hdopString,char_dest_ptr,0,0);
 //        *char_dest_ptr++ = ','; // try once
 //
-//        //char crc_high_byte;
-//        //char crc_low_byte;
+//        char crc_high_byte = 55;
+//        char crc_low_byte = 58;
 //        //socketTxData  ,  Gsm.socketTxData[L_FRAME_INIT]
-//        str_copy_ram_lim("STX,",Gsm.socketTxData,0);
-//        uinteger temp_frame_len = L_FRAME_LEN(char_dest_ptr - &Gsm.socketTxData[L_FRAME_INIT]);
-//        dec_int_to_char_fixed(&temp_frame_len,&Gsm.socketTxData[L_STX],4);
-//        Gsm.socketTxData[L_STX+4] = ',';
-//       // GSM.Params.socket[socket].tx[L_FRAME_INIT-L_FUNC_CODE]   = FC_CONFIGRATION;
-//       // GSM.Params.socket[socket].tx[L_FRAME_INIT-L_FUNC_CODE+1] = ',';
+        str_copy_ram_lim("STX,",gsm.TxData,0);
+        uint16_t temp_frame_len = L_FRAME_LEN(char_dest_ptr - &gsm.TxData[L_FRAME_INIT]);
+        convert_integer_to_char(temp_frame_len,&gsm.TxData[L_STX],4);
+  //      gsm.TxData[L_STX+4] = ',';
+        gsm.TxData[L_STX+L_FR_LEN]   = gsm.gsm_data.FC_CONFIGURATION;
+        gsm.TxData[L_STX+L_FR_LEN+1] = ',';
+
 //
 //        //crc_generate_modbus(Gsm.socketTxData,(char_dest_ptr - Gsm.socketTxData));
 //        //crc_high_byte = Gsm.socketTxData[char_dest_ptr - Gsm.socketTxData];
 //        //crc_low_byte = Gsm.socketTxData[char_dest_ptr - Gsm.socketTxData + 1];
-//        //dec_byte_to_char_fixed(&crc_high_byte,&Gsm.socketTxData[char_dest_ptr - Gsm.socketTxData],3);
-//        //dec_byte_to_char_fixed(&crc_low_byte,&Gsm.socketTxData[char_dest_ptr - Gsm.socketTxData+3],3);
+//        dec_byte_to_char_fixed(&crc_high_byte,&gsm.TxData[char_dest_ptr - gsm.TxData],3);
+//        dec_byte_to_char_fixed(&crc_low_byte,&gsm.TxData[char_dest_ptr - gsm.TxData+3],3);
 //        crc_generate_ascii_modbus(Gsm.socketTxData,(char_dest_ptr - Gsm.socketTxData));
-//        str_copy_ram_lim("ETX",&Gsm.socketTxData[char_dest_ptr - Gsm.socketTxData+6],0);
-//        Gsm.TxDataCnt = char_dest_ptr - Gsm.socketTxData + L_CRC + L_ETX;
+        str_copy_ram_lim("ETX",&gsm.TxData[char_dest_ptr - gsm.TxData+4],0);
+        gsm.TxDataCnt = char_dest_ptr - gsm.TxData + L_CRC + L_ETX;
 ////        GSM.Params.socket[socket].updated = 1;
-//        Gsm.Flags.DataPacketReady = 1;
+        gsm.Flags.DataPacketReady = 1;
 //        Gsm.TxOperation = 1;
 }
+
+
