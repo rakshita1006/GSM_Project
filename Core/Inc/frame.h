@@ -14,7 +14,7 @@
 #define L_FUNC_CODE     (unsigned char)1
 #define L_FR_LEN        4
 #define comma			1
-#define L_CRC           (unsigned char)4
+#define L_CRC           (unsigned char)9
 #define L_DATA          (uint8_t)1000
 #define L_FRAME_INIT                        (uint8_t)(L_STX+L_FR_LEN+L_FUNC_CODE+comma)
 //#define L_FRAME_INIT                        (uint8_t)(L_STX+L_FR_LEN+L_FUNC_CODE)
@@ -27,7 +27,7 @@
 
 void prepare_frame(void);
 void GenerateStausPacket(void);
-
+int convert_crcint_to_char(uint32_t num, char *str,uint32_t length);
 #endif /* FRAME_H_ */
 
 

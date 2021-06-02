@@ -371,6 +371,7 @@ unsigned char* jump_char_fixed(unsigned char *pktPtr, char character)
 
 void gsmtask()
 {
+
 	gsm_imsi();
 	gsm_imei();
 	gsm_ccid();

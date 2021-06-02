@@ -5,30 +5,31 @@
  *      Author: rakshita.parihar
  */
 
-
-int crc_main ()
-   {
-     unsigned int i, j;
-     unsigned int c;
-     int table[256];
-     for (i = 0; i < 256; i++)
-       {
-	 for (c = i << 24, j = 8; j > 0; --j)
-	   c = c & 0x80000000 ? (c << 1) ^ 0x04c11db7 : (c << 1);
-	 table[i] = c;
-       }
-     printf ("static const unsigned int crc32_table[] =\n{\n");
-     for (i = 0; i < 256; i += 4)
-       {
-	 printf ("  0x%08x, 0x%08x, 0x%08x, 0x%08x",
-		 table[i + 0], table[i + 1], table[i + 2], table[i + 3]);
-	 if (i + 4 < 256)
-	   putchar (',');
-	 putchar ('\n');
-       }
-     printf ("};\n");
-     return 0;
-   }
+#include<stdio.h>
+#include "Include.h"
+//int crc_main ()
+//   {
+//     unsigned int i, j;
+//     unsigned int c;
+//     int table[256];
+//     for (i = 0; i < 256; i++)
+//       {
+//	 for (c = i << 24, j = 8; j > 0; --j)
+//	   c = c & 0x80000000 ? (c << 1) ^ 0x04c11db7 : (c << 1);
+//	 table[i] = c;
+//       }
+//    // printf ("static const unsigned int crc32_table[] =\n{\n");
+////     for (i = 0; i < 256; i += 4)
+////       {
+////	 printf ("  0x%08x, 0x%08x, 0x%08x, 0x%08x",
+////		 table[i + 0], table[i + 1], table[i + 2], table[i + 3]);
+////	 if (i + 4 < 256)
+////	   putchar (',');
+////	 putchar ('\n');
+////       }
+////     printf ("};\n");
+//     return 0;
+//   }
 //   For more information on CRC, see, e.g.,
 //   http://www.ross.net/crc/download/crc_v3.txt.  */
 
@@ -100,6 +101,7 @@ static const unsigned int crc32_table[] =
   0xbcb4666d, 0xb8757bda, 0xb5365d03, 0xb1f740b4
 };
 
+
 /*
 @deftypefn Extension {unsigned int} crc32 (const unsigned char *@var{buf}, @
   int @var{len}, unsigned int @var{init})
@@ -122,11 +124,10 @@ are not reflected, and there is no final XOR value.  These differences
 make it easy to compose the values of multiple blocks.
 @end deftypefn
 */
-
-unsigned int
-xcrc32 (const unsigned char *buf, int len, unsigned int init)
+//0x2991a17c
+unsigned int xcrc32 (const unsigned char *buf, int len, unsigned int init)
 {
-  unsigned int crc = init;
+  unsigned int crc = init;     //  crc << 8 = ffffff00    ,
   while (len--)
     {
       crc = (crc << 8) ^ crc32_table[((crc >> 24) ^ *buf) & 255];
@@ -134,3 +135,97 @@ xcrc32 (const unsigned char *buf, int len, unsigned int init)
     }
   return crc;
 }
+
+/*
+ voide verify_crc( gsm rx base add , length)
+ {
+ 	 char crc_buff[10];
+ 	 // gsm rx data crc copy into crc_buff;
+
+ 	crc_buff =  crc32_generator(gsm rx data, length);
+
+
+ compare ( crc_buff , gsm rx cec);
+ }
+
+ */
+
+//uint16_t verify_crc(uint8_t src_address[], uint16_t length)
+//{
+//	uint32_t CRCRx;
+//	char buff[length];
+//	str_copy_count(src_address,buff,(gsm.TxDataCnt-12));
+//	CRCRx = xcrc32 (buff,144,0xffffffff);
+//	if( gsm.gsm_data.CRC_Value == CRCRx)
+//	{
+//		return 1;
+//	}
+//	else
+//	{
+//		return 0;
+//	}
+//}
+
+uint16_t verify_crc(char* str, uint16_t length)
+{
+	char crc_buff[9];
+	char crc_buff_RX[length];
+	unsigned int CRCRx;
+	str_copy_count(str+length,crc_buff,9);
+	str_copy_count(str,crc_buff_RX,length);
+	CRCRx = xcrc32 (crc_buff_RX,133,0xffffffff);
+	if( gsm.gsm_data.CRC_Value == CRCRx)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+
+}
+//"STX0144A,DS23456001,00123456,1.00,861123052577218,404100530355267,8991102005303552671,22,0,13.126.165.4,9000,8000,14/12/2005,00:14:12,"
+//"STX0144A,DS23456001,00123456,1.00,861123052577218,404100530355267,8991102005303552671,22,0,13.126.165.4,9000,8000,14/12/2005,00:14:12,",
+//STX0144A,DS23456001,00123456,1.00,861123052577218,404100530355267,8991102005303552671,22,0,13.126.165.4,9000,8000,14/12/2005,00:14:12,",
+//STX0144A,DS23456001,00123456,1.00,861123052577218,404100530355267,8991102005303552671,22,0,13.126.165.4,9000,8000,14/12/2005,00:14:12,"
+//STX0144A,DS23456001,00123456,1.00,861123052577218,404100530355267,8991102005303552671,22,0,13.126.165.4,9000,8000,14/12/2005,00:14:12,258185312ETX"
+////////////////////////////////////////////////
+
+//void make_crc_table(unsigned long crcTable[]) {
+//    unsigned long POLYNOMIAL = 0xEDB88320;
+//    unsigned long remainder;
+//    unsigned char b = 0;
+//    do {
+//        // Start with the data byte
+//        remainder = b;
+//        for (unsigned long bit = 8; bit > 0; --bit) {
+//            if (remainder & 1)
+//                remainder = (remainder >> 1) ^ POLYNOMIAL;
+//            else
+//                remainder = (remainder >> 1);
+//        }
+//        crcTable[(size_t)b] = remainder;
+//    } while(0 != ++b);
+//}
+//
+//unsigned long gen_crc(unsigned char *p, size_t n, unsigned long crcTable[]) {
+//    unsigned long crc = 0xfffffffful;
+//    size_t i;
+//    for(i = 0; i < n; i++)
+//        crc = crcTable[*p++ ^ (crc&0xff)] ^ (crc>>8);
+//    return(~crc);
+//}
+//
+//int crc_main() {
+//    unsigned long crcTable[256];
+//    make_crc_table(crcTable);
+//    // Print the CRC table
+//    for (size_t i = 0; i < 256; i++) {
+//        std::cout << std::setfill('0') << std::setw(8) << std::hex << crcTable[i];
+//        if (i % 4 == 3)
+//            std::cout << std::endl;
+//        else
+//            std::cout << ", ";
+//    }
+//    return 0;
+//}

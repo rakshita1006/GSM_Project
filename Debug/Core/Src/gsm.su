@@ -13,4 +13,4 @@ gsm.c:333:6:gprs_registration_status	16	static
 gsm.c:354:6:VerifyResponseCommand	16	static
 gsm.c:366:16:jump_char_fixed	16	static
 gsm.c:372:6:gsmtask	8	static
-gsm.c:679:6:HAL_UART_RxCpltCallback	16	static
+gsm.c:680:6:HAL_UART_RxCpltCallback	16	static

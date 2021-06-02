@@ -22,10 +22,10 @@
 #define SIZE_OF_AT_TX_RX_BUFFER 1024
 
 // functional code
-# define FC_ALERT				'A'
+#define  FC_ALERT				'A'
 #define  FC_KEEPLIVE			'K'
 #define  FC_STATUS				'S'
-#define	 FC_CONFIG		'C'
+#define	 FC_CONFIG		        'C'
 #define	 FC_BUZZER_ON			'N'
 #define	 FC_BUZZER_OFF			'F'
 
@@ -95,6 +95,8 @@ struct gsm_data_struct
    unsigned  char date[15];
    unsigned char time[10];
    unsigned  char FC_CONFIGURATION;
+  // unsigned  char CRC_Value[9];
+   unsigned int  CRC_Value;
 }__attribute__ ((packed));
 
 struct Gsm_Flags
@@ -118,6 +120,7 @@ struct Gsm_Flags
      unsigned  Server_Response_Flag:1;
      unsigned  Receive_Data_Flag:1;
      unsigned  DataPacketReady:1;
+     unsigned  DataCRCCorrect:1;
 
 }__attribute__ ((packed));
 
@@ -126,8 +129,8 @@ typedef struct {
     struct gsm_data_struct gsm_data;
     uint16_t RxDataCnt;
     uint16_t TxDataCnt;
-	uint8_t TxData[SIZE_OF_AT_TX_RX_BUFFER];
-	uint8_t RxData[SIZE_OF_AT_TX_RX_BUFFER];
+	uint8_t TxData[SIZE_OF_AT_TX_RX_BUFFER -877];
+	uint8_t RxData[SIZE_OF_AT_TX_RX_BUFFER-877];
 }Gsm_struct;
 
 extern Gsm_struct gsm;

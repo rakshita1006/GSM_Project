@@ -18,6 +18,9 @@ char Server_name[] = "13.126.165.4";	// pankaj_personal  //  13.126.165.4
 char Status_Port[5] = "9000";			// 4000
 char Command_Port[5] = "8000";			// 8000
 char Modem_data_status[2] = "1";
+//char CRC_Value[15];
+uint32_t CRC_Value1;
+uint32_t CRC_Value2;
 
 uint32_t str_copy_ram_lim_ret( char *rec_src_ram_add,  char *rec_dest_ram_add,  char rec_delimitter,char src_dest)
 {
@@ -57,7 +60,66 @@ void str_copy_ram_lim( char *rec_src_ram_add,  char *rec_dest_ram_add,  char rec
         *rec_dest_ram_add++ = *rec_src_ram_add++;
 }
 
+int str_copy_count(char* Source_Ram_address, char* Destination_Ram_address, uint32_t length)
+{
+    int count=0;
+	while( count != length)
+		{
+			  *Destination_Ram_address++ = *Source_Ram_address++;
+			  count++;
 
+		}
+}
+
+
+int convert_crcint_to_char(uint32_t num, char *str,uint32_t length)
+{
+	//int temp=count_intlength(num);
+	if(num == 0)
+	{
+		*str  = '0';
+		return 0;
+	}
+	switch(length)
+	{
+//		case 10:
+//			*str++ = num/1000000000 + 0x30;
+//			num =  num%1000000000;
+		case 9:
+			*str++ = num/100000000 + 0x30;
+			num =  num%100000000;
+		case 8:
+			*str++ = num/10000000 + 0x30;
+			num =  num%10000000;
+		case 7:
+			*str++ = num/1000000 + 0x30;
+			num =  num%1000000;
+		case 6:
+			*str++ = num/100000 + 0x30;
+			num =  num%100000;
+		case 5:
+			*str++ = num/10000 + 0x30;
+			num =  num%10000;
+		case 4:
+			*str++ = num/1000 + 0x30;
+			num =  num%1000;
+		case 3:
+			*str++ = num/100 + 0x30;
+			num =  num%100;
+		case 2:
+			*str++ = (num/10) + 0x30;
+			num =  num%10;
+		case 1:
+			*str++ = num + 0x30;
+			num=0;
+			break;
+        default:
+        	*str = '/0';
+        	return 0;
+	}
+	return 1;
+}
+//CRC_Value= xcrc32 (gsm.TxData,4,1001);
 void GenerateStausPacket()
 {
 //    memcpy(Gsm.GsmDataUni.GsmDataStru.utc_timeStamp,TimeStmp , sizeof(TimeStmp));
@@ -68,6 +130,7 @@ void GenerateStausPacket()
       memcpy(gsm.gsm_data.Status_Port,Status_Port , sizeof(Status_Port));
       memcpy(gsm.gsm_data.Command_Port,Command_Port , sizeof(Command_Port));
       memcpy(gsm.gsm_data.Server_name,Server_name , sizeof(Server_name));
+    //  memcpy(gsm.gsm_data.CRC_Value,CRC_Value, sizeof(CRC_Value));
 //
 //    memcpy(Gsm.GsmDataUni.GsmDataStru.command_port,Command_Port , sizeof(Command_Port));
 //    memcpy(Gsm.GsmDataUni.GsmDataStru.server_name,Server_name , sizeof(Server_name));
@@ -135,6 +198,9 @@ void GenerateStausPacket()
 		// time
         char_dest_ptr += str_copy_ram_lim_ret(gsm.gsm_data.time,char_dest_ptr,0,0);
         *char_dest_ptr++ = ','; // try once
+//        //CRC
+   //     char_dest_ptr += str_copy_ram_lim_ret(gsm.gsm_data.CRC_Value,char_dest_ptr,0,0);
+  //      *char_dest_ptr++ = ',';
 
 
 
@@ -205,18 +271,39 @@ void GenerateStausPacket()
         gsm.TxData[L_STX+L_FR_LEN]   = gsm.gsm_data.FC_CONFIGURATION;
         gsm.TxData[L_STX+L_FR_LEN+1] = ',';
 
-//
+//0x17dfeb99
 //        //crc_generate_modbus(Gsm.socketTxData,(char_dest_ptr - Gsm.socketTxData));
 //        //crc_high_byte = Gsm.socketTxData[char_dest_ptr - Gsm.socketTxData];
 //        //crc_low_byte = Gsm.socketTxData[char_dest_ptr - Gsm.socketTxData + 1];
 //        dec_byte_to_char_fixed(&crc_high_byte,&gsm.TxData[char_dest_ptr - gsm.TxData],3);
 //        dec_byte_to_char_fixed(&crc_low_byte,&gsm.TxData[char_dest_ptr - gsm.TxData+3],3);
 //        crc_generate_ascii_modbus(Gsm.socketTxData,(char_dest_ptr - Gsm.socketTxData));
-        str_copy_ram_lim("ETX",&gsm.TxData[char_dest_ptr - gsm.TxData+4],0);
+        gsm.gsm_data.CRC_Value= xcrc32 (gsm.TxData,133,0xffffffff);
+        convert_crcint_to_char(gsm.gsm_data.CRC_Value,&gsm.TxData[char_dest_ptr - gsm.TxData],9);
+        str_copy_ram_lim("ETX",&gsm.TxData[char_dest_ptr - gsm.TxData+9],0);
         gsm.TxDataCnt = char_dest_ptr - gsm.TxData + L_CRC + L_ETX;
 ////        GSM.Params.socket[socket].updated = 1;
+        //str_copy_count(gsm.TxData,gsm.RxData,(gsm.TxDataCnt-12));
+int i=0;
+        while(gsm.TxData[i] !='\0')
+        {
+//        	uint16_t count=0;
+//        	count = (gsm.TxDataCnt-12);
+//        	str_copy_count(gsm.TxData,gsm.RxData,(gsm.TxDataCnt-12));
+//        	CRC_Value2 = xcrc32 (gsm.RxData,144,0xffffffff);
+        	//break;
+        	gsm.RxData[i] = gsm.TxData[i];
+        	i++;
+        }
+        // verification crc function call
+        // verify_crc(gsm rx data, length( total length - crc & etx)
+      //  CRC_Value2 = xcrc32 (gsm.RxData,144,0xffffffff);
+        if(verify_crc(gsm.RxData,(gsm.TxDataCnt-12)))
+        {
+        	gsm.Flags.DataCRCCorrect = 1;
+        }
         gsm.Flags.DataPacketReady = 1;
-//        Gsm.TxOperation = 1;
+   //     Gsm.TxOperation = 1;
 }
 
 
